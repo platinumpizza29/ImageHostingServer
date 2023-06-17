@@ -1,22 +1,33 @@
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
+const express = require("express");
+const upload = require("express-fileupload");
 const app = express();
-const upload = multer({ dest: 'uploads/' }); // Set the destination folder for uploaded images
 
-//Middleware
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+//middleware
+app.use(upload())
 
-// Routes
-app.post('/upload', upload.single('image'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).send('No image file was uploaded.');
+//routes
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/index.html")
+})
+
+
+app.post("/upload", (req, res) => {
+  if (req.files) {
+    var file = req.files.file;
+    var fileName = file.name;
+    file.mv("./uploads/" + fileName, (err) => {
+      if (err) {
+        res.sendStatus(500)
+        console.log(err)
+      } else {
+        res.sendStatus(200)
+      }
+    })
+    console.log(fileName)
   }
-  // Process the uploaded image and save it or perform any required operations
-  // Return the relevant response to the client, such as the URL or other details of the uploaded image
-  res.send({ url: `http://localhost:3000/uploads/${req.file.filename}` });
-});
+})
 
+// Start the server
 const port = 3000; // Or any other port number you prefer
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
